@@ -12,6 +12,7 @@
       color: #fff;
       margin: 0;
       padding: 20px;
+      box-sizing: border-box;
     }
 
     h1 {
@@ -125,6 +126,68 @@
 
     .extra-buttons button:hover {
       background-color: #d4881e;
+    }
+
+    /* Media Queries para hacer la interfaz más responsiva */
+    @media (max-width: 768px) {
+      select, input, button {
+        font-size: 14px;
+      }
+
+      .resultados {
+        font-size: 16px;
+      }
+
+      footer {
+        padding: 15px;
+      }
+
+      footer button {
+        font-size: 14px;
+      }
+
+      .extra-buttons button {
+        width: 45%;
+      }
+
+      .historial-container {
+        max-height: 300px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      select, input, button {
+        font-size: 12px;
+        padding: 12px;
+      }
+
+      .resultados {
+        font-size: 14px;
+      }
+
+      footer {
+        padding: 10px;
+      }
+
+      footer button {
+        font-size: 12px;
+      }
+
+      .extra-buttons button {
+        width: 45%;
+      }
+
+      .historial-container {
+        max-height: 250px;
+      }
     }
   </style>
 </head>
@@ -310,44 +373,4 @@
         historial[mes].forEach(entry => {
           const divEntrada = document.createElement("div");
           divEntrada.className = "entrada";
-          divEntrada.textContent = `${entry.fecha} - Opción: ${entry.opcion} | Ganancia Bruta: $${entry.bruto} | Ganancia Neta: $${entry.neto}`;
-          divMes.appendChild(divEntrada);
-        });
-
-        contenedor.appendChild(divMes);
-      }
-
-      contenedor.style.display = contenedor.style.display === "none" ? "block" : "none";
-    }
-
-    function exportarHistorial() {
-      const historial = JSON.parse(localStorage.getItem("caruHistorial") || "{}");
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      let y = 10;
-
-      for (const mes in historial) {
-        doc.text(mes, 10, y);
-        y += 10;
-
-        historial[mes].forEach(entry => {
-          doc.text(`${entry.fecha} - Opción: ${entry.opcion} | Ganancia Bruta: $${entry.bruto} | Ganancia Neta: $${entry.neto}`, 10, y);
-          y += 10;
-        });
-
-        y += 10; // Añadir espacio entre meses
-      }
-
-      doc.save("historial.pdf");
-    }
-
-    function resetearHistorial() {
-      localStorage.removeItem("caruHistorial");
-      document.getElementById("historial").innerHTML = "";
-      alert("Historial reseteado.");
-    }
-  </script>
-</body>
-</html>
+          divEntrada.textContent = `${entry
