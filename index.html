@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caru Utility Web</title>
+  <style>
+    /* Estilo general para el modo oscuro */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f5a623;
+      margin-bottom: 20px;
+    }
+
+    select, input, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 15px;
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    select:hover, input:hover, button:hover {
+      background-color: #444;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #f5a623;
+      border: none;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #d4881e;
+    }
+
+    /* Sección de resultados */
+    .resultados {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #resultadoBruto {
+      color: #f5a623;
+    }
+
+    #resultadoNeto {
+      color: #8bc34a;
+    }
+
+    /* Estilo para el pie de página */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      padding: 20px;
+      background-color: #222;
+      border-radius: 5px;
+    }
+
+    footer button {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    footer button:hover {
+      background-color: #333;
+    }
+
+    .historial-container {
+      display: none;
+      background-color: #2a2a2a;
+      padding: 20px;
+      border-radius: 5px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .mes {
+      margin-bottom: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #f5a623;
+    }
+
+    .entrada {
+      padding-left: 20px;
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    /* Botones extras */
+    .extra-buttons {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .extra-buttons button {
+      width: 48%;
+      background-color: #f5a623;
+      border: none;
+      color: white;
+      font-size: 16px;
+    }
+
+    .extra-buttons button:hover {
+      background-color: #d4881e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Caru Utility Web</h1>
+
+  <label for="opciones">Selecciona una opción:</label>
+  <select id="opciones" onchange="mostrarInputs()">
+    <option value="">-- Seleccionar --</option>
+    <option value="acrilico">Costo de Acrílico Dorado Espejo</option>
+    <option value="personalizado">Costo de Material Personalizado</option>
+    <option value="corte">Costo por minutos de corte</option>
+    <option value="produccion">Costo de Producción Total Acrílico Dorado Espejo</option>
+  </select>
+
+  <div id="inputs"></div>
+  <button onclick="calcular()">Calcular</button>
+
+  <div class="resultados">
+    <div id="resultadoBruto"></div>
+    <div id="resultadoNeto"></div>
+  </div>
+
+  <footer>
+    <button onclick="toggleHistorial()">Ver Historial</button>
+    <div class="historial-container" id="historial"></div>
+    <div class="extra-buttons">
+      <button onclick="exportarHistorial()">Exportar PDF</button>
+      <button onclick="resetearHistorial()">Resetear Historial</button>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    function mostrarInputs() {
+      const opcion = document.getElementById("opciones").value;
+      const contenedor = document.getElementById("inputs");
+      limpiarResultados();
+
+      let camposHTML = "";
+
+      switch (opcion) {
+        case "acrilico":
+          camposHTML = `
+            <label>Alto del diseño (cm):</label>
+            <input type="number" id="alto" required>
+            <label>Ancho del diseño (cm):</label>
+            <input type="number" id="ancho" required>
+            <label>Comisión extra a ganar (%):</label>
+            <input type="number" id="comision" required>
+          `;
+          break;
+        case "personalizado":
+          camposHTML = `
+            <label>Alto del material (cm):</label>
+            <input type="number" id="altoMat" required>
+            <label>Ancho del material (cm):</label>
+            <input type="number" id="anchoMat" required>
+            <label>Costo del material ($):</label>
+            <input type="number" id="precioMat" required>
+            <label>Alto del diseño (cm):</label>
+            <input type="number" id="alto" required>
+            <label>Ancho del diseño (cm):</label>
+            <input type="number" id="ancho" required>
+            <label>Comisión extra a ganar (%):</label>
+            <input type="number" id="comision" required>
+          `;
+          break;
+        case "corte":
+          camposHTML = `
+            <label>Cantidad de minutos de corte:</label>
+            <input type="number" id="minutos" required>
+            <label>Porcentaje extra a ganar (%):</label>
+            <input type="number" id="comision" required>
+          `;
+          break;
+        case "produccion":
+          camposHTML = `
+            <label>Alto del diseño (cm):</label>
+            <input type="number" id="alto" required>
+            <label>Ancho del diseño (cm):</label>
+            <input type="number" id="ancho" required>
+            <label>Comisión sobre el acrílico a ganar (%):</label>
+            <input type="number" id="comisionAcrilico" required>
+            <label>Cantidad de minutos de corte:</label>
+            <input type="number" id="minutos" required>
+            <label>Comisión sobre el corte a ganar (%):</label>
+            <input type="number" id="comisionCorte" required>
+            <label>Porcentaje sobre costo a ganar (%):</label>
+            <input type="number" id="comisionCosto" required>
+          `;
+          break;
+      }
+
+      contenedor.innerHTML = camposHTML;
+    }
+
+    function limpiarResultados() {
+      document.getElementById("resultadoBruto").textContent = "";
+      document.getElementById("resultadoNeto").textContent = "";
+    }
+
+    function calcular() {
+      const opcion = document.getElementById("opciones").value;
+      const now = new Date();
+      let bruto = 0;
+      let neto = 0;
+
+      if (opcion === "acrilico") {
+        const alto = parseFloat(document.getElementById("alto").value);
+        const ancho = parseFloat(document.getElementById("ancho").value);
+        const comision = parseFloat(document.getElementById("comision").value);
+        const base = 1990;
+        const area = (alto * ancho) / (240 * 120);
+        bruto = base * area * (1 + comision / 100);
+        neto = bruto * 0.85;
+      } else if (opcion === "personalizado") {
+        const altoMat = parseFloat(document.getElementById("altoMat").value);
+        const anchoMat = parseFloat(document.getElementById("anchoMat").value);
+        const precioMat = parseFloat(document.getElementById("precioMat").value);
+        const alto = parseFloat(document.getElementById("alto").value);
+        const ancho = parseFloat(document.getElementById("ancho").value);
+        const comision = parseFloat(document.getElementById("comision").value);
+        const area = (alto * ancho) / (altoMat * anchoMat);
+        bruto = precioMat * area * (1 + comision / 100);
+        neto = bruto * 0.85;
+      } else if (opcion === "corte") {
+        const minutos = parseFloat(document.getElementById("minutos").value);
+        const comision = parseFloat(document.getElementById("comision").value);
+        bruto = minutos * 3 * (1 + comision / 100);
+        neto = bruto * 0.85;
+      } else if (opcion === "produccion") {
+        const alto = parseFloat(document.getElementById("alto").value);
+        const ancho = parseFloat(document.getElementById("ancho").value);
+        const comA = parseFloat(document.getElementById("comisionAcrilico").value);
+        const minutos = parseFloat(document.getElementById("minutos").value);
+        const comC = parseFloat(document.getElementById("comisionCorte").value);
+        const comCosto = parseFloat(document.getElementById("comisionCosto").value);
+        const base = 1990;
+        const area = (alto * ancho) / (240 * 120);
+        const costoAcrilico = base * area * (1 + comA / 100);
+        const costoCorte = minutos * 3 * (1 + comC / 100);
+        bruto = costoAcrilico + costoCorte;
+        neto = bruto * (1 + comCosto / 100);
+      } else {
+        alert("Selecciona una opción válida.");
+        return;
+      }
+
+      document.getElementById("resultadoBruto").textContent = `Ganancia Bruta: $${bruto.toFixed(2)}`;
+      document.getElementById("resultadoNeto").textContent = `Ganancia Neta: $${neto.toFixed(2)}`;
+      guardarHistorial(opcion, bruto, neto, now);
+    }
+
+    function guardarHistorial(opcion, bruto, neto, fecha) {
+      const historial = JSON.parse(localStorage.getItem("caruHistorial") || "{}");
+      const mes = fecha.toLocaleString("default", { month: "long" });
+      const año = fecha.getFullYear();
+      const clave = `${mes} ${año}`;
+
+      if (!historial[clave]) historial[clave] = [];
+
+      historial[clave].push({
+        fecha: fecha.toLocaleString(),
+        opcion,
+        bruto: bruto.toFixed(2),
+        neto: neto.toFixed(2)
+      });
+
+      localStorage.setItem("caruHistorial", JSON.stringify(historial));
+    }
+
+    function toggleHistorial() {
+      const contenedor = document.getElementById("historial");
+      contenedor.innerHTML = "";
+      const historial = JSON.parse(localStorage.getItem("caruHistorial") || "{}");
+
+      for (const mes in historial) {
+        const divMes = document.createElement("div");
+        divMes.className = "mes";
+        divMes.innerHTML = `<strong>${mes}</strong>`;
+
+        historial[mes].forEach(entry => {
+          const divEntrada = document.createElement("div");
+          divEntrada.className = "entrada";
+          divEntrada.textContent = `${entry.fecha} - Opción: ${entry.opcion} | Ganancia Bruta: $${entry.bruto} | Ganancia Neta: $${entry.neto}`;
+          divMes.appendChild(divEntrada);
+        });
+
+        contenedor.appendChild(divMes);
+      }
+
+      contenedor.style.display = contenedor.style.display === "none" ? "block" : "none";
+    }
+
+    function exportarHistorial() {
+      const historial = JSON.parse(localStorage.getItem("caruHistorial") || "{}");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      let y = 10;
+
+      for (const mes in historial) {
+        doc.text(mes, 10, y);
+        y += 10;
+
+        historial[mes].forEach(entry => {
+          doc.text(`${entry.fecha} - Opción: ${entry.opcion} | Ganancia Bruta: $${entry.bruto} | Ganancia Neta: $${entry.neto}`, 10, y);
+          y += 10;
+        });
+
+        y += 10; // Añadir espacio entre meses
+      }
+
+      doc.save("historial.pdf");
+    }
+
+    function resetearHistorial() {
+      localStorage.removeItem("caruHistorial");
+      document.getElementById("historial").innerHTML = "";
+      alert("Historial reseteado.");
+    }
+  </script>
+</body>
+</html>
